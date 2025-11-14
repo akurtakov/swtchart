@@ -395,9 +395,12 @@ public class BarSeries<T> extends Series<T> implements IBarSeries<T> {
 		int red = color.getRed();
 		int green = color.getGreen();
 		int blue = color.getBlue();
-		red *= (red > 128) ? 0.8 : 1.2;
-		green *= (green > 128) ? 0.8 : 1.2;
-		blue *= (blue > 128) ? 0.8 : 1.2;
+		red = (int)Math.round(red * ((red > 128) ? 0.8 : 1.2));
+		green = (int)Math.round(green * ((green > 128) ? 0.8 : 1.2));
+		blue = (int)Math.round(blue * ((blue > 128) ? 0.8 : 1.2));
+		red = Math.max(0, Math.min(255, red));
+		green = Math.max(0, Math.min(255, green));
+		blue = Math.max(0, Math.min(255, blue));
 		return Resources.getColor(red, green, blue);
 	}
 

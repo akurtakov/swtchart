@@ -236,11 +236,11 @@
                         <artifactId>org.osgi.service.component.annotations</artifactId>
                         <version>1.5.1</version>
                       </additionalDependency>
-                      <dependency>
+                      <additionalDependency>
                         <groupId>org.eclipse.pde</groupId>
                         <artifactId>org.eclipse.pde.api.tools.annotations</artifactId>
                         <version>1.4.0</version>
-                      </dependency>
+                      </additionalDependency>
                     </additionalDependencies>
                   </configuration>
                   <executions>

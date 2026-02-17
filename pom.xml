@@ -229,7 +229,6 @@
                     <failOnError>false</failOnError>
                     <legacyMode>true</legacyMode>
                     <doclint>accessibility,html,reference,syntax</doclint>
-                    <sourcepath>${maven.multiModuleProjectDirectory}/org.eclipse.swtchart/src;${maven.multiModuleProjectDirectory}/org.eclipse.swtchart.extensions/src;${maven.multiModuleProjectDirectory}/org.eclipse.swtchart.customcharts/src;${maven.multiModuleProjectDirectory}/org.eclipse.swtchart.export/src;${maven.multiModuleProjectDirectory}/org.eclipse.swtchart.export.extended/src;${maven.multiModuleProjectDirectory}/org.eclipse.swtchart.vectorgraphics2d/src</sourcepath>
                     <additionalDependencies>
                       <additionalDependency>
                         <groupId>org.osgi</groupId>
@@ -250,6 +249,15 @@
                           <goals>
                               <goal>jar</goal>
                           </goals>
+                      </execution>
+                      <execution>
+                          <id>aggregate-javadocs</id>
+                          <goals>
+                              <goal>aggregate</goal>
+                          </goals>
+                          <configuration>
+                            <sourcepath>${maven.multiModuleProjectDirectory}/org.eclipse.swtchart/src;${maven.multiModuleProjectDirectory}/org.eclipse.swtchart.extensions/src;${maven.multiModuleProjectDirectory}/org.eclipse.swtchart.customcharts/src;${maven.multiModuleProjectDirectory}/org.eclipse.swtchart.export/src;${maven.multiModuleProjectDirectory}/org.eclipse.swtchart.export.extended/src;${maven.multiModuleProjectDirectory}/org.eclipse.swtchart.vectorgraphics2d/src</sourcepath>
+                          </configuration>
                       </execution>
                   </executions>
               </plugin>

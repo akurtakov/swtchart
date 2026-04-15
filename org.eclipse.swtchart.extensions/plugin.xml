@@ -25,6 +25,12 @@
          <property-name
                name="grid-color">
          </property-name>
+         <property-name
+               name="axis-color">
+         </property-name>
+         <property-name
+               name="axis-font">
+         </property-name>
       </handler>
    </extension>
    <extension

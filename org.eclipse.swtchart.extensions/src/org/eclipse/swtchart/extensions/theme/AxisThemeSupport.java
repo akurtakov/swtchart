@@ -12,126 +12,58 @@
  *******************************************************************************/
 package org.eclipse.swtchart.extensions.theme;
 
-import org.eclipse.jface.resource.ColorRegistry;
-import org.eclipse.jface.resource.FontRegistry;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swtchart.extensions.core.IAxisSettings;
-import org.eclipse.swtchart.extensions.core.IChartSettings;
-import org.eclipse.swtchart.extensions.core.ISecondaryAxisSettings;
+import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
+import org.eclipse.swtchart.extensions.core.ScrollableChart;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.themes.ITheme;
-import org.eclipse.ui.themes.IThemeManager;
 
 /**
- * Utility class that applies Eclipse workbench theme colours and fonts to
- * {@link IAxisSettings} objects without requiring callers to access
- * {@code PlatformUI} or the {@link IThemeManager} directly.
+ * Utility class that re-applies the active e4 CSS theme to a
+ * {@link ScrollableChart} without requiring callers to access
+ * {@link IThemeEngine} directly.
  *
  * <p>
- * The key convention used by this class matches the one established by the
- * chemclipse {@code ChartSupport.themeAxis()} helper:
+ * Theming is driven entirely by CSS: colours and fonts are declared in the
+ * active theme's stylesheet and delivered to the chart through the registered
+ * {@link ScrollableChartCSSPropertyHandler}. The supported CSS properties are:
  * <ul>
- * <li>{@code <part>.LineColor} – axis line / tick colour
- * ({@link IAxisSettings#setColor(Color)})</li>
- * <li>{@code <part>.GridColor} – grid colour
- * ({@link IAxisSettings#setGridColor(Color)})</li>
- * <li>{@code <part>.Font} – axis title font
- * ({@link IAxisSettings#setTitleFont(Font)})</li>
+ * <li>{@code axis-color} – axis line / tick colour</li>
+ * <li>{@code axis-font} – axis title font</li>
+ * <li>{@code grid-color} – grid colour</li>
  * </ul>
  *
  * <p>
- * Downstream callers (e.g. chemclipse) can replace
+ * Example usage:
  *
  * <pre>
- * IThemeManager themeManager = PlatformUI.getWorkbench().getThemeManager();
- * ITheme currentTheme = themeManager.getCurrentTheme();
- * ColorRegistry colorRegistry = currentTheme.getColorRegistry();
- * axisSettings.setColor(colorRegistry.get(part + ".LineColor"));
- * axisSettings.setGridColor(colorRegistry.get(part + ".GridColor"));
- * FontRegistry fontRegistry = currentTheme.getFontRegistry();
- * axisSettings.setTitleFont(fontRegistry.get(part + ".Font"));
- * </pre>
- *
- * with a single call:
- *
- * <pre>
- * AxisThemeSupport.applyTheme(axisSettings, part);
+ * AxisThemeSupport.applyTheme(scrollableChart);
  * </pre>
  */
 public final class AxisThemeSupport {
-
-	/** Suffix for the axis line/tick colour theme key. */
-	public static final String SUFFIX_LINE_COLOR = ".LineColor"; //$NON-NLS-1$
-	/** Suffix for the axis grid colour theme key. */
-	public static final String SUFFIX_GRID_COLOR = ".GridColor"; //$NON-NLS-1$
-	/** Suffix for the axis title font theme key. */
-	public static final String SUFFIX_FONT = ".Font"; //$NON-NLS-1$
 
 	private AxisThemeSupport() {
 
 	}
 
 	/**
-	 * Applies the Eclipse workbench theme entries identified by {@code part} to
-	 * the given {@link IAxisSettings}.
+	 * Re-applies the active e4 CSS theme to the given {@link ScrollableChart}
+	 * by calling {@link IThemeEngine#applyStyles(Object, boolean)}.
 	 *
 	 * <p>
-	 * Only non-{@code null} registry values are applied; if a key is not
-	 * registered in the current theme the corresponding axis setting is left
-	 * unchanged.
+	 * This triggers the {@link ScrollableChartCSSPropertyHandler} which updates
+	 * {@code axis-color}, {@code axis-font}, and {@code grid-color} on every
+	 * axis of the chart.
 	 *
-	 * @param axisSettings
-	 *            the axis settings to update (must not be {@code null})
-	 * @param part
-	 *            the theme key prefix (e.g. {@code "org.foo.MyAxis"})
-	 * @throws IllegalStateException
-	 *             if the workbench has not been started yet
+	 * @param chart
+	 *            the chart to re-theme; ignored if {@code null} or disposed
 	 */
-	public static void applyTheme(IAxisSettings axisSettings, String part) {
+	public static void applyTheme(ScrollableChart chart) {
 
-		if(axisSettings == null || part == null) {
+		if(chart == null || chart.isDisposed()) {
 			return;
 		}
-		IThemeManager themeManager = PlatformUI.getWorkbench().getThemeManager();
-		ITheme currentTheme = themeManager.getCurrentTheme();
-		ColorRegistry colorRegistry = currentTheme.getColorRegistry();
-		Color lineColor = colorRegistry.get(part + SUFFIX_LINE_COLOR);
-		if(lineColor != null) {
-			axisSettings.setColor(lineColor);
-		}
-		Color gridColor = colorRegistry.get(part + SUFFIX_GRID_COLOR);
-		if(gridColor != null) {
-			axisSettings.setGridColor(gridColor);
-		}
-		FontRegistry fontRegistry = currentTheme.getFontRegistry();
-		Font font = fontRegistry.get(part + SUFFIX_FONT);
-		if(font != null) {
-			axisSettings.setTitleFont(font);
-		}
-	}
-
-	/**
-	 * Convenience method that applies the same theme prefix to every axis (both
-	 * primary and all secondary axes) in the given {@link IChartSettings}.
-	 *
-	 * @param chartSettings
-	 *            the chart settings to update (must not be {@code null})
-	 * @param part
-	 *            the theme key prefix (e.g. {@code "org.foo.MyAxis"})
-	 */
-	public static void applyTheme(IChartSettings chartSettings, String part) {
-
-		if(chartSettings == null || part == null) {
-			return;
-		}
-		applyTheme(chartSettings.getPrimaryAxisSettingsX(), part);
-		applyTheme(chartSettings.getPrimaryAxisSettingsY(), part);
-		for(ISecondaryAxisSettings settings : chartSettings.getSecondaryAxisSettingsListX()) {
-			applyTheme(settings, part);
-		}
-		for(ISecondaryAxisSettings settings : chartSettings.getSecondaryAxisSettingsListY()) {
-			applyTheme(settings, part);
+		IThemeEngine themeEngine = PlatformUI.getWorkbench().getService(IThemeEngine.class);
+		if(themeEngine != null) {
+			themeEngine.applyStyles(chart, true);
 		}
 	}
 }

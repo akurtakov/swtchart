@@ -123,13 +123,6 @@
         </children>
       </children>
     </elements>
-    <elements xsi:type="advanced:Perspective" xmi:id="_ThemeEnginePerspective" elementId="org.eclipse.swtchart.extensions.examples.perspective.themeengine" label="Demo - SWTChart Extensions (Theme Engine)">
-      <children xsi:type="basic:PartSashContainer" xmi:id="_ThemeEnginePSC" elementId="org.eclipse.swtchart.extensions.examples.partsashcontainer.themeengine">
-        <children xsi:type="basic:PartStack" xmi:id="_ThemeEnginePS" elementId="org.eclipse.swtchart.extensions.examples.partstack.themeengine">
-          <children xsi:type="basic:Part" xmi:id="_ThemeEnginePart" elementId="org.eclipse.swtchart.extensions.examples.part.themeengine" contributionURI="bundleclass://org.eclipse.swtchart.extensions.examples/org.eclipse.swtchart.extensions.examples.parts.LineSeries_ThemeEngine_Part" label="Theme Engine" iconURI="platform:/plugin/org.eclipse.swtchart.extensions.examples/icons/swtchart.gif"/>
-        </children>
-      </children>
-    </elements>
     <elements xsi:type="advanced:Perspective" xmi:id="_XfAK4NDXEeqhDPrxlDyw8w" elementId="org.eclipse.swtchart.extensions.examples.perspective.demo-swtchartextensionscircularcharts" label="Demo-SWTChart Extensions (Circular Charts)">
       <children xsi:type="basic:PartSashContainer" xmi:id="_oSxqENDXEeqhDPrxlDyw8w" elementId="org.eclipse.swtchart.extensions.examples.partsashcontainer.15">
         <children xsi:type="basic:PartSashContainer" xmi:id="_rk9zkNDXEeqhDPrxlDyw8w" elementId="org.eclipse.swtchart.extensions.examples.partsashcontainer.16" horizontal="true">

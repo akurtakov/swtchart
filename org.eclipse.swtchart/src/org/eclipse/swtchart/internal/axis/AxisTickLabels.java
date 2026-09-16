@@ -367,7 +367,7 @@ public class AxisTickLabels implements PaintListener {
 	 *            the object
 	 * @return the formatted string
 	 */
-	private String format(Object obj) {
+	String format(Object obj) {
 
 		if(format == null) {
 			return new DecimalFormat(DEFAULT_DECIMAL_FORMAT).format(obj);

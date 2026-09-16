@@ -23,7 +23,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swtchart.IAxis;
 import org.eclipse.swtchart.ISeries;
 import org.eclipse.swtchart.Range;
@@ -1051,6 +1054,24 @@ public class AxisTest extends ChartTestCase {
 		pixelY = yAxis.getPixelCoordinate(dataY);
 		assertEquals(r.x * 0.4, pixelX, 1);
 		assertEquals(r.y * 0.3, pixelY, 1);
+	}
+
+	/**
+	 * Test for drawing the position marker when no tick format is set.
+	 */
+	@Test
+	public void testPositionMarkerWithDefaultFormat()  {
+
+		assertNull(xAxis.getTick().getFormat());
+		xAxis.setDrawPositionMarker(true);
+		((AxisTick)xAxis.getTick()).getAxisPositionMarker().update(20, 20);
+		// paint directly, the display may only log exceptions thrown by paint listeners
+		Event paint = new Event();
+		paint.display = chart.getDisplay();
+		paint.widget = chart;
+		paint.gc = new GC(chart);
+		((AxisTick)xAxis.getTick()).getAxisPositionMarker().paintControl(new PaintEvent(paint));
+		paint.gc.dispose();
 	}
 
 	/**

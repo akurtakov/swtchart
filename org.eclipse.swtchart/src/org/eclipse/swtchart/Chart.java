@@ -131,6 +131,7 @@ public class Chart extends Composite implements Listener {
 		legend.setLayoutData(new ChartLayoutData(200, SWT.DEFAULT));
 		axisSet = new AxisSet(this);
 		addListener(SWT.Resize, this);
+		addListener(SWT.Dispose, this);
 	}
 
 	/**
@@ -353,9 +354,19 @@ public class Chart extends Composite implements Listener {
 				updateLayout();
 				redraw();
 				break;
+			case SWT.Dispose:
+				releaseResources();
+				break;
 			default:
 				break;
 		}
+	}
+
+	private void releaseResources() {
+
+		title.dispose();
+		legend.dispose();
+		axisSet.dispose();
 	}
 
 	/**
@@ -388,15 +399,6 @@ public class Chart extends Composite implements Listener {
 		for(Control child : getChildren()) {
 			child.update();
 		}
-	}
-
-	@Override
-	public void dispose() {
-
-		title.dispose();
-		legend.dispose();
-		axisSet.dispose();
-		super.dispose();
 	}
 
 	@Override

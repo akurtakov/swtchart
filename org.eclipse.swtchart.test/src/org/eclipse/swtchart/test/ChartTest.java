@@ -20,8 +20,11 @@ import java.io.File;
 import java.util.UUID;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swtchart.Chart;
 import org.eclipse.swtchart.IBarSeries;
 import org.eclipse.swtchart.ILineSeries;
 import org.eclipse.swtchart.ISeries;
@@ -400,6 +403,28 @@ public class ChartTest extends ChartTestCase {
 			while(System.currentTimeMillis() - time < 100) {
 				Display.getDefault().readAndDispatch();
 			}
+		}
+		assertEquals(0, getSwtResourceCount());
+	}
+
+	/**
+	 * Test for the SWT resources of a chart which is destroyed along with its parent, instead of
+	 * being disposed itself.
+	 */
+	@Test
+	public void testSwtResourcesOnParentDisposal() throws Throwable {
+
+		Shell parent = new Shell(Display.getDefault());
+		try {
+			Chart childChart = new Chart(parent, SWT.NONE);
+			startTrackingSwtResources();
+			// the text layout of a title is created along with its style ranges
+			childChart.getTitle().setStyleRanges(new StyleRange[]{});
+			childChart.getAxisSet().getXAxis(0).getTitle().setStyleRanges(new StyleRange[]{});
+			childChart.getAxisSet().getYAxis(0).getTitle().setStyleRanges(new StyleRange[]{});
+			assertTrue(getSwtResourceCount() > 0);
+		} finally {
+			parent.dispose();
 		}
 		assertEquals(0, getSwtResourceCount());
 	}

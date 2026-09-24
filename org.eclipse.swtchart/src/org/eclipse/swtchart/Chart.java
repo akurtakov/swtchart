@@ -95,10 +95,19 @@ public class Chart extends Composite implements Listener {
 		if(!((style & NO_AXIS_POSITION_UPDATE) == NO_AXIS_POSITION_UPDATE)) {
 			plotArea.addMouseMoveListener(e -> {
 
+				boolean drawPositionMarker = false;
 				for(IAxis axis : axisSet.getAxes()) {
 					axis.updatePositionMarker(e);
+					drawPositionMarker |= axis.isDrawPositionMarker() && axis.getTick().isVisible();
 				}
-				redraw();
+				/*
+				 * The repaint is only needed to draw the position markers,
+				 * which are disabled by default and are drawn along visible
+				 * axis ticks only.
+				 */
+				if(drawPositionMarker) {
+					redraw();
+				}
 			});
 		}
 		setData("org.eclipse.e4.ui.css.CssClassName", "Chart");

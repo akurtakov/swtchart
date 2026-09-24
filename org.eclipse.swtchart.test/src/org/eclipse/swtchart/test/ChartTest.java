@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swtchart.Chart;
 import org.eclipse.swtchart.IBarSeries;
@@ -427,5 +428,57 @@ public class ChartTest extends ChartTestCase {
 			parent.dispose();
 		}
 		assertEquals(0, getSwtResourceCount());
+	}
+
+	/**
+	 * Test that the chart is repainted on mouse move only while a position marker is drawn.
+	 */
+	@Test
+	public void testMouseMoveRedraw() {
+
+		showChart();
+		int[] paintCount = {0};
+		chart.addPaintListener(_ -> paintCount[0]++);
+		assertEquals(0, paintsOnMouseMove(paintCount), "repainted although no position marker is drawn");
+		chart.getAxisSet().getXAxis(0).setDrawPositionMarker(true);
+		assertTrue(paintsOnMouseMove(paintCount) > 0, "the position marker is not drawn");
+		// the marker is drawn along the axis ticks only
+		chart.getAxisSet().getXAxis(0).getTick().setVisible(false);
+		assertEquals(0, paintsOnMouseMove(paintCount), "repainted although the axis ticks are hidden");
+	}
+
+	/**
+	 * Moves the mouse over the plot area and counts the repaints of the chart it causes.
+	 */
+	private int paintsOnMouseMove(int[] paintCount) {
+
+		waitForPendingPaints(paintCount);
+		Event event = new Event();
+		event.x = 20;
+		event.y = 20;
+		chart.getPlotArea().getControl().notifyListeners(SWT.MouseMove, event);
+		long time = System.currentTimeMillis();
+		while(System.currentTimeMillis() - time < 200) {
+			Display.getDefault().readAndDispatch();
+		}
+		return paintCount[0];
+	}
+
+	/**
+	 * Runs the event loop until the chart has not been repainted for a while, so that repaints
+	 * requested earlier are not counted for the mouse move.
+	 */
+	private void waitForPendingPaints(int[] paintCount) {
+
+		long quiet = System.currentTimeMillis();
+		long timeout = quiet + 2000;
+		while(System.currentTimeMillis() - quiet < 100 && System.currentTimeMillis() < timeout) {
+			if(paintCount[0] != 0) {
+				paintCount[0] = 0;
+				quiet = System.currentTimeMillis();
+			}
+			Display.getDefault().readAndDispatch();
+		}
+		paintCount[0] = 0;
 	}
 }

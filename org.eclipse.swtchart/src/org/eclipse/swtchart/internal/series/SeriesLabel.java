@@ -22,7 +22,6 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swtchart.ISeriesLabel;
-import org.eclipse.swtchart.internal.Util;
 
 /**
  * A series label.
@@ -186,7 +185,7 @@ public class SeriesLabel implements ISeriesLabel {
 		}
 		// draw label
 		if(alignment == SWT.CENTER) {
-			Point p = Util.getExtentInGC(font, text);
+			Point p = gc.textExtent(text);
 			gc.drawString(text, (int)(h - p.x / 2d), (int)(v - p.y / 2d), true);
 		} else if(alignment == SWT.BOTTOM) {
 			gc.drawString(text, h, v, true);

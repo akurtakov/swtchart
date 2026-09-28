@@ -544,7 +544,7 @@ public class ScrollableChart extends Composite implements IScrollableChart, IEve
 
 	public boolean togglePositionMarkerVisibility() {
 
-		boolean draw = !plotCenterMarker.isDraw();
+		boolean draw = !positionMarker.isDraw();
 		positionMarker.setDraw(draw);
 		redrawPlotArea();
 		return draw;

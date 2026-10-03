@@ -45,6 +45,7 @@ import org.eclipse.swtchart.model.DrawingMode;
 public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 
 	private static final int ALPHA = 50;
+	private static final int AREA_STRIP_POINTS = 64;
 	private static final LineStyle DEFAULT_LINE_STYLE = LineStyle.SOLID;
 	private static final int DEFAULT_LINE_WIDTH = 1;
 	private static final int DEFAULT_LINE_COLOR = SWT.COLOR_BLUE;
@@ -588,6 +589,45 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 		return Arrays.copyOf(line, count);
 	}
 
+	private static boolean isMonotone(int[] line) {
+
+		int direction = 0;
+		for(int i = 2; i < line.length; i += 2) {
+			int step = Integer.signum(line[i] - line[i - 2]);
+			if(step != 0) {
+				if(direction == 0) {
+					direction = step;
+				} else if(step != direction) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Fills the area between the line and the baseline. The area is filled in
+	 * strips as Cairo fills a few small polygons faster than one with many
+	 * edges spanning the same rows.
+	 */
+	private void drawAreaStrips(GC gc, int[] line, Axis xAxis, Axis yAxis) {
+
+		double baseYCoordinate = yAxis.getRange().lower > 0 ? yAxis.getRange().lower : 0;
+		int base = yAxis.getPixelCoordinate(yAxis.isLogScaleEnabled() ? yAxis.getRange().lower : baseYCoordinate);
+		int points = line.length / 2;
+		for(int start = 0; start < points - 1; start += AREA_STRIP_POINTS) {
+			int end = Math.min(start + AREA_STRIP_POINTS, points - 1);
+			int count = (end - start + 1) * 2;
+			int[] polygon = new int[count + 4];
+			System.arraycopy(line, start * 2, polygon, 0, count);
+			polygon[count++] = line[end * 2];
+			polygon[count++] = base;
+			polygon[count++] = line[start * 2];
+			polygon[count++] = base;
+			gc.fillPolygon(toGCPoints(polygon, xAxis));
+		}
+	}
+
 	private static int[] toGCPoints(int[] points, Axis xAxis) {
 
 		if(!xAxis.isHorizontalAxis()) {
@@ -659,9 +699,20 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 		Color oldBackground = gc.getBackground();
 		gc.setAlpha(ALPHA);
 		gc.setBackground(getLineColor());
-		if(isUseAreaStrict()) {
-			gc.fillPolygon(toGCPoints(getAreaLine(xseries, yseries, indexes, xAxis, yAxis), xAxis));
+		boolean strict = isUseAreaStrict();
+		int[] line = null;
+		if(strict || (!stepEnabled && !isValidStackSeries())) {
+			line = getAreaLine(xseries, yseries, indexes, xAxis, yAxis);
+		}
+		if(line != null && strict) {
+			gc.fillPolygon(toGCPoints(line, xAxis));
+		} else if(line != null && isMonotone(line)) {
+			drawAreaStrips(gc, line, xAxis, yAxis);
 		} else {
+			/*
+			 * Step and stack areas aren't bounded by the line and the area
+			 * below a line going back and forth isn't enclosed by its outline
+			 */
 			boolean isHorizontal = xAxis.isHorizontalAxis();
 			for(int i = 0; i < xseries.length - 1; i++) {
 				drawAreaSegment(gc, getLinePoints(xseries, yseries, indexes, i, xAxis, yAxis), isHorizontal);

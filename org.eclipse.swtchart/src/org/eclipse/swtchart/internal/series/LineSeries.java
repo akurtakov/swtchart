@@ -550,6 +550,12 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 
 	private void drawArea(GC gc, int[] p, boolean isHorizontal) {
 
+		if(isHorizontal ? p[0] == p[2] : p[1] == p[3]) {
+			/*
+			 * Nothing to fill within one pixel column
+			 */
+			return;
+		}
 		int alpha = gc.getAlpha();
 		gc.setAlpha(ALPHA);
 		Color oldBackground = gc.getBackground();

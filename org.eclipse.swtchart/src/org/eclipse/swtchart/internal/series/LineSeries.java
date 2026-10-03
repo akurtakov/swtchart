@@ -380,16 +380,18 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 				xseries[i] = indexes[i];
 			}
 		}
+		/*
+		 * Area must be drawn first so lines appear on top
+		 */
+		if(areaEnabled) {
+			drawArea(gc, xseries, yseries, indexes, xAxis, yAxis);
+		}
 		gc.setLineStyle(lineStyle.value());
 		Color oldForeground = gc.getForeground();
 		gc.setForeground(getLineColor());
 		boolean isHorizontal = xAxis.isHorizontalAxis();
 		if(stepEnabled || areaEnabled || stackEnabled) {
-			boolean useAreaStrict = isUseAreaStrict();
-			int length = xseries.length - 1;
-			int numberValues = 4;
-			int[] points = useAreaStrict ? new int[length * numberValues] : null;
-			for(int i = 0; i < length; i++) {
+			for(int i = 0; i < xseries.length - 1; i++) {
 				int[] p = getLinePoints(xseries, yseries, indexes, i, xAxis, yAxis);
 				if(lineStyle != LineStyle.NONE) {
 					if(stepEnabled) {
@@ -404,27 +406,6 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 						gc.drawLine(p[0], p[1], p[2], p[3]);
 					}
 				}
-				if(areaEnabled) {
-					if(useAreaStrict) {
-						for(int j = 0; j < numberValues; j++) {
-							points[i * numberValues + j] = p[j];
-						}
-					} else {
-						drawArea(gc, p, isHorizontal);
-					}
-				}
-			}
-			if(useAreaStrict && points.length > 2) {
-				double[] x = getXSeries();
-				double[] y = getYSeries();
-				int[] idx = IntStream.range(0, x.length).toArray();
-				int[] p0 = getLinePoints(x, y, idx, 0, xAxis, yAxis);
-				int[] pn = getLinePoints(x, y, idx, x.length - 2, xAxis, yAxis);
-				points[0] = p0[0];
-				points[1] = p0[1];
-				points[points.length - 2] = pn[2];
-				points[points.length - 1] = pn[3];
-				drawAreaStrict(gc, points);
 			}
 		} else {
 			if(lineStyle == LineStyle.SOLID) {
@@ -548,7 +529,7 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 		}
 	}
 
-	private void drawArea(GC gc, int[] p, boolean isHorizontal) {
+	private void drawAreaSegment(GC gc, int[] p, boolean isHorizontal) {
 
 		if(isHorizontal ? p[0] == p[2] : p[1] == p[3]) {
 			/*
@@ -556,10 +537,6 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 			 */
 			return;
 		}
-		int alpha = gc.getAlpha();
-		gc.setAlpha(ALPHA);
-		Color oldBackground = gc.getBackground();
-		gc.setBackground(getLineColor());
 		int[] pointArray;
 		if(stepEnabled) {
 			if(isHorizontal) {
@@ -571,19 +548,6 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 			pointArray = new int[]{p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[0], p[1]};
 		}
 		gc.fillPolygon(pointArray);
-		gc.setAlpha(alpha);
-		gc.setBackground(oldBackground);
-	}
-
-	private void drawAreaStrict(GC gc, int[] points) {
-
-		int alpha = gc.getAlpha();
-		gc.setAlpha(ALPHA);
-		Color oldBackground = gc.getBackground();
-		gc.setBackground(getLineColor());
-		gc.fillPolygon(points);
-		gc.setAlpha(alpha);
-		gc.setBackground(oldBackground);
 	}
 
 	private void drawBresenham(GC gc, int width, int height, Axis xAxis, Axis yAxis) {
@@ -633,6 +597,15 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 				xseries[i] = indexes[i];
 			}
 		}
+		drawArea(gc, xseries, yseries, indexes, xAxis, yAxis);
+	}
+
+	private void drawArea(GC gc, double[] xseries, double[] yseries, int[] indexes, Axis xAxis, Axis yAxis) {
+
+		int alpha = gc.getAlpha();
+		Color oldBackground = gc.getBackground();
+		gc.setAlpha(ALPHA);
+		gc.setBackground(getLineColor());
 		boolean isHorizontal = xAxis.isHorizontalAxis();
 		boolean useAreaStrict = isUseAreaStrict();
 		int length = xseries.length - 1;
@@ -645,7 +618,7 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 					points[i * numberValues + j] = p[j];
 				}
 			} else {
-				drawArea(gc, p, isHorizontal);
+				drawAreaSegment(gc, p, isHorizontal);
 			}
 		}
 		if(useAreaStrict && points.length > 2) {
@@ -658,8 +631,10 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 			points[1] = p0[1];
 			points[points.length - 2] = pn[2];
 			points[points.length - 1] = pn[3];
-			drawAreaStrict(gc, points);
+			gc.fillPolygon(points);
 		}
+		gc.setAlpha(alpha);
+		gc.setBackground(oldBackground);
 	}
 
 	/**

@@ -606,26 +606,42 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 	}
 
 	/**
-	 * Fills the area between the line and the baseline. The area is filled in
+	 * Fills the area between the line and the baseline or, if the area is
+	 * strict, the straight line between the line's ends. The area is filled in
 	 * strips as Cairo fills a few small polygons faster than one with many
 	 * edges spanning the same rows.
 	 */
 	private void drawAreaStrips(GC gc, int[] line, Axis xAxis, Axis yAxis) {
 
+		boolean strict = isUseAreaStrict();
 		double baseYCoordinate = yAxis.getRange().lower > 0 ? yAxis.getRange().lower : 0;
 		int base = yAxis.getPixelCoordinate(yAxis.isLogScaleEnabled() ? yAxis.getRange().lower : baseYCoordinate);
+		int x0 = line[0];
+		int y0 = line[1];
+		int xn = line[line.length - 2];
+		int yn = line[line.length - 1];
 		int points = line.length / 2;
 		for(int start = 0; start < points - 1; start += AREA_STRIP_POINTS) {
 			int end = Math.min(start + AREA_STRIP_POINTS, points - 1);
 			int count = (end - start + 1) * 2;
 			int[] polygon = new int[count + 4];
 			System.arraycopy(line, start * 2, polygon, 0, count);
-			polygon[count++] = line[end * 2];
-			polygon[count++] = base;
-			polygon[count++] = line[start * 2];
-			polygon[count++] = base;
+			int xStart = line[start * 2];
+			int xEnd = line[end * 2];
+			polygon[count++] = xEnd;
+			polygon[count++] = strict ? getChordY(xEnd, x0, y0, xn, yn) : base;
+			polygon[count++] = xStart;
+			polygon[count++] = strict ? getChordY(xStart, x0, y0, xn, yn) : base;
 			gc.fillPolygon(toGCPoints(polygon, xAxis));
 		}
+	}
+
+	private static int getChordY(int x, int x0, int y0, int xn, int yn) {
+
+		if(xn == x0) {
+			return y0;
+		}
+		return (int)Math.round(y0 + (double)(x - x0) * (yn - y0) / (xn - x0));
 	}
 
 	private static int[] toGCPoints(int[] points, Axis xAxis) {
@@ -704,10 +720,10 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 		if(strict || (!stepEnabled && !isValidStackSeries())) {
 			line = getAreaLine(xseries, yseries, indexes, xAxis, yAxis);
 		}
-		if(line != null && strict) {
-			gc.fillPolygon(toGCPoints(line, xAxis));
-		} else if(line != null && isMonotone(line)) {
+		if(line != null && isMonotone(line)) {
 			drawAreaStrips(gc, line, xAxis, yAxis);
+		} else if(line != null && strict) {
+			gc.fillPolygon(toGCPoints(line, xAxis));
 		} else {
 			/*
 			 * Step and stack areas aren't bounded by the line and the area

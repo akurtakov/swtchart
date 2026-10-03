@@ -390,21 +390,19 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 		Color oldForeground = gc.getForeground();
 		gc.setForeground(getLineColor());
 		boolean isHorizontal = xAxis.isHorizontalAxis();
-		if(stepEnabled || areaEnabled || stackEnabled) {
+		if(stepEnabled || isValidStackSeries()) {
 			for(int i = 0; i < xseries.length - 1; i++) {
 				int[] p = getLinePoints(xseries, yseries, indexes, i, xAxis, yAxis);
-				if(lineStyle != LineStyle.NONE) {
-					if(stepEnabled) {
-						if(isHorizontal) {
-							gc.drawLine(p[0], p[1], p[2], p[1]);
-							gc.drawLine(p[2], p[1], p[2], p[3]);
-						} else {
-							gc.drawLine(p[0], p[1], p[0], p[3]);
-							gc.drawLine(p[0], p[3], p[2], p[3]);
-						}
+				if(stepEnabled) {
+					if(isHorizontal) {
+						gc.drawLine(p[0], p[1], p[2], p[1]);
+						gc.drawLine(p[2], p[1], p[2], p[3]);
 					} else {
-						gc.drawLine(p[0], p[1], p[2], p[3]);
+						gc.drawLine(p[0], p[1], p[0], p[3]);
+						gc.drawLine(p[0], p[3], p[2], p[3]);
 					}
+				} else {
+					gc.drawLine(p[0], p[1], p[2], p[3]);
 				}
 			}
 		} else {

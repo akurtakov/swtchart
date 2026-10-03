@@ -389,11 +389,6 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 			int length = xseries.length - 1;
 			int numberValues = 4;
 			int[] points = useAreaStrict ? new int[length * numberValues] : null;
-			double[] x = getXSeries();
-			double[] y = getYSeries();
-			int[] idx = useAreaStrict ? IntStream.range(0, x.length - 1).toArray() : null;
-			int[] p0 = useAreaStrict ? getLinePoints(x, y, idx, 0, xAxis, yAxis) : null;
-			int[] pn = useAreaStrict ? getLinePoints(x, y, idx, idx.length - 1, xAxis, yAxis) : null;
 			for(int i = 0; i < length; i++) {
 				int[] p = getLinePoints(xseries, yseries, indexes, i, xAxis, yAxis);
 				if(lineStyle != LineStyle.NONE) {
@@ -420,6 +415,11 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 				}
 			}
 			if(useAreaStrict && points.length > 2) {
+				double[] x = getXSeries();
+				double[] y = getYSeries();
+				int[] idx = IntStream.range(0, x.length).toArray();
+				int[] p0 = getLinePoints(x, y, idx, 0, xAxis, yAxis);
+				int[] pn = getLinePoints(x, y, idx, x.length - 2, xAxis, yAxis);
 				points[0] = p0[0];
 				points[1] = p0[1];
 				points[points.length - 2] = pn[2];
@@ -632,11 +632,6 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 		int length = xseries.length - 1;
 		int numberValues = 4;
 		int[] points = useAreaStrict ? new int[length * numberValues] : null;
-		double[] x = getXSeries();
-		double[] y = getYSeries();
-		int[] idx = useAreaStrict ? IntStream.range(0, x.length - 1).toArray() : null;
-		int[] p0 = useAreaStrict ? getLinePoints(x, y, idx, 0, xAxis, yAxis) : null;
-		int[] pn = useAreaStrict ? getLinePoints(x, y, idx, idx.length - 1, xAxis, yAxis) : null;
 		for(int i = 0; i < length; i++) {
 			int[] p = getLinePoints(xseries, yseries, indexes, i, xAxis, yAxis);
 			if(useAreaStrict) {
@@ -648,6 +643,11 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 			}
 		}
 		if(useAreaStrict && points.length > 2) {
+			double[] x = getXSeries();
+			double[] y = getYSeries();
+			int[] idx = IntStream.range(0, x.length).toArray();
+			int[] p0 = getLinePoints(x, y, idx, 0, xAxis, yAxis);
+			int[] pn = getLinePoints(x, y, idx, x.length - 2, xAxis, yAxis);
 			points[0] = p0[0];
 			points[1] = p0[1];
 			points[points.length - 2] = pn[2];

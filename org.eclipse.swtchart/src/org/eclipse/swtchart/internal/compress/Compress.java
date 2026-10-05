@@ -87,6 +87,43 @@ public abstract class Compress implements ICompress {
 		compressed = false;
 	}
 
+	/**
+	 * Gets the number of points before compression.
+	 *
+	 * @return the number of points
+	 */
+	public int getLength() {
+
+		if(xSeries == null || ySeries == null) {
+			return 0;
+		}
+		return Math.min(xSeries.length, ySeries.length);
+	}
+
+	/**
+	 * Gets the X value before compression.
+	 *
+	 * @param index
+	 *            the index of the point
+	 * @return the X value
+	 */
+	public double getX(int index) {
+
+		return xSeries[index];
+	}
+
+	/**
+	 * Gets the Y value before compression.
+	 *
+	 * @param index
+	 *            the index of the point
+	 * @return the Y value
+	 */
+	public double getY(int index) {
+
+		return ySeries[index];
+	}
+
 	@Override
 	public double[] getCompressedXSeries() {
 

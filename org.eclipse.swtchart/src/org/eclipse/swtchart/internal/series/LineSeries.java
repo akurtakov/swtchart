@@ -16,8 +16,8 @@
 package org.eclipse.swtchart.internal.series;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -35,6 +35,7 @@ import org.eclipse.swtchart.LineStyle;
 import org.eclipse.swtchart.Range;
 import org.eclipse.swtchart.internal.LineDrawingBresenham;
 import org.eclipse.swtchart.internal.axis.Axis;
+import org.eclipse.swtchart.internal.compress.Compress;
 import org.eclipse.swtchart.internal.compress.CompressLineSeries;
 import org.eclipse.swtchart.internal.compress.CompressScatterSeries;
 import org.eclipse.swtchart.model.CartesianSeriesModel;
@@ -548,6 +549,57 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 		gc.fillPolygon(pointArray);
 	}
 
+	/**
+	 * Gets the line bounding the area in pixel coordinates along the X and Y
+	 * axis. If the area is strict, the line starts and ends at the first and
+	 * last point of the series. Consecutive points on the same pixel column
+	 * only add zero width spikes to the area, so just the first and last of
+	 * them are kept, which bounds the line by the plot size instead of the
+	 * number of points.
+	 */
+	private int[] getAreaLine(double[] xseries, double[] yseries, int[] indexes, Axis xAxis, Axis yAxis) {
+
+		boolean strict = isUseAreaStrict();
+		boolean validStack = isValidStackSeries();
+		int length = xseries.length;
+		int[] line = new int[Math.min(length * 2, 4096)];
+		int count = 0;
+		for(int i = 0; i < length; i++) {
+			int x;
+			int y;
+			if(strict && (i == 0 || i == length - 1) && compressor instanceof Compress compress && compress.getLength() > 0) {
+				int index = i == 0 ? 0 : compress.getLength() - 1;
+				x = xAxis.getPixelCoordinate(compress.getX(index));
+				y = yAxis.getPixelCoordinate(validStack ? stackSeries[index] : compress.getY(index));
+			} else {
+				x = xAxis.getPixelCoordinate(xseries[i]);
+				y = yAxis.getPixelCoordinate(validStack ? stackSeries[indexes[i]] : yseries[i]);
+			}
+			if(count >= 4 && x == line[count - 2] && x == line[count - 4]) {
+				line[count - 1] = y;
+			} else {
+				if(count == line.length) {
+					line = Arrays.copyOf(line, line.length * 2);
+				}
+				line[count++] = x;
+				line[count++] = y;
+			}
+		}
+		return Arrays.copyOf(line, count);
+	}
+
+	private static int[] toGCPoints(int[] points, Axis xAxis) {
+
+		if(!xAxis.isHorizontalAxis()) {
+			for(int i = 0; i < points.length; i += 2) {
+				int x = points[i];
+				points[i] = points[i + 1];
+				points[i + 1] = x;
+			}
+		}
+		return points;
+	}
+
 	private void drawBresenham(GC gc, int width, int height, Axis xAxis, Axis yAxis) {
 
 		int oldAntialias = gc.getAntialias();
@@ -600,36 +652,20 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 
 	private void drawArea(GC gc, double[] xseries, double[] yseries, int[] indexes, Axis xAxis, Axis yAxis) {
 
+		if(xseries.length < 2) {
+			return;
+		}
 		int alpha = gc.getAlpha();
 		Color oldBackground = gc.getBackground();
 		gc.setAlpha(ALPHA);
 		gc.setBackground(getLineColor());
-		boolean isHorizontal = xAxis.isHorizontalAxis();
-		boolean useAreaStrict = isUseAreaStrict();
-		int length = xseries.length - 1;
-		int numberValues = 4;
-		int[] points = useAreaStrict ? new int[length * numberValues] : null;
-		for(int i = 0; i < length; i++) {
-			int[] p = getLinePoints(xseries, yseries, indexes, i, xAxis, yAxis);
-			if(useAreaStrict) {
-				for(int j = 0; j < numberValues; j++) {
-					points[i * numberValues + j] = p[j];
-				}
-			} else {
-				drawAreaSegment(gc, p, isHorizontal);
+		if(isUseAreaStrict()) {
+			gc.fillPolygon(toGCPoints(getAreaLine(xseries, yseries, indexes, xAxis, yAxis), xAxis));
+		} else {
+			boolean isHorizontal = xAxis.isHorizontalAxis();
+			for(int i = 0; i < xseries.length - 1; i++) {
+				drawAreaSegment(gc, getLinePoints(xseries, yseries, indexes, i, xAxis, yAxis), isHorizontal);
 			}
-		}
-		if(useAreaStrict && points.length > 2) {
-			double[] x = getXSeries();
-			double[] y = getYSeries();
-			int[] idx = IntStream.range(0, x.length).toArray();
-			int[] p0 = getLinePoints(x, y, idx, 0, xAxis, yAxis);
-			int[] pn = getLinePoints(x, y, idx, x.length - 2, xAxis, yAxis);
-			points[0] = p0[0];
-			points[1] = p0[1];
-			points[points.length - 2] = pn[2];
-			points[points.length - 1] = pn[3];
-			gc.fillPolygon(points);
 		}
 		gc.setAlpha(alpha);
 		gc.setBackground(oldBackground);

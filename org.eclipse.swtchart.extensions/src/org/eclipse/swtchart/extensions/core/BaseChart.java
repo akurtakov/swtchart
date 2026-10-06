@@ -83,9 +83,9 @@ public class BaseChart extends AbstractExtendedChart implements IKeyboardSupport
 	private IChartSettings chartSettings;
 	/*
 	 * Prevent accidental zooming.
-	 * At least 30% of the chart width or height needs to be selected.
+	 * At least 1/100th of the chart width or height needs to be selected.
 	 */
-	private static final int MIN_SELECTION_PERCENTAGE = 30;
+	private static final int MIN_SELECTION_RANGE_FACTOR = 100;
 	public static final long DELTA_CLICK_TIME = 100;
 	/*
 	 * To prevent that the data is redrawn on mouse events too
@@ -1623,14 +1623,14 @@ public class BaseChart extends AbstractExtendedChart implements IKeyboardSupport
 		int deltaHeight;
 		Point point = getPlotArea().getSize();
 		if((getOrientation() == SWT.HORIZONTAL)) {
-			minSelectedWidth = point.x / MIN_SELECTION_PERCENTAGE;
+			minSelectedWidth = point.x / MIN_SELECTION_RANGE_FACTOR;
 			deltaWidth = Math.abs(userSelection.getStartX() - event.x);
-			minSelectedHeight = point.y / MIN_SELECTION_PERCENTAGE;
+			minSelectedHeight = point.y / MIN_SELECTION_RANGE_FACTOR;
 			deltaHeight = Math.abs(userSelection.getStartY() - event.y);
 		} else {
-			minSelectedWidth = point.y / MIN_SELECTION_PERCENTAGE;
+			minSelectedWidth = point.y / MIN_SELECTION_RANGE_FACTOR;
 			deltaWidth = Math.abs(userSelection.getStartY() - event.y);
-			minSelectedHeight = point.x / MIN_SELECTION_PERCENTAGE;
+			minSelectedHeight = point.x / MIN_SELECTION_RANGE_FACTOR;
 			deltaHeight = Math.abs(userSelection.getStartX() - event.x);
 		}
 		/*

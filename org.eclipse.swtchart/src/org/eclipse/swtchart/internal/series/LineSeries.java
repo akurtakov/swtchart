@@ -384,14 +384,19 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 		Color oldForeground = gc.getForeground();
 		gc.setForeground(getLineColor());
 		boolean isHorizontal = xAxis.isHorizontalAxis();
-		if(stepEnabled || areaEnabled || stackEnabled) {
+		/*
+		 * Only steps and stacks need the line drawn segment by segment, other
+		 * lines are drawn like without the area, after it so they're on top
+		 */
+		boolean lineBySegment = stepEnabled || isValidStackSeries();
+		if(lineBySegment || areaEnabled) {
 			boolean useAreaStrict = isUseAreaStrict();
 			int length = xseries.length - 1;
 			int numberValues = 4;
 			int[] points = useAreaStrict ? new int[length * numberValues] : null;
 			for(int i = 0; i < length; i++) {
 				int[] p = getLinePoints(xseries, yseries, indexes, i, xAxis, yAxis);
-				if(lineStyle != LineStyle.NONE) {
+				if(lineBySegment && lineStyle != LineStyle.NONE) {
 					if(stepEnabled) {
 						if(isHorizontal) {
 							gc.drawLine(p[0], p[1], p[2], p[1]);
@@ -426,7 +431,8 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 				points[points.length - 1] = pn[3];
 				drawAreaStrict(gc, points);
 			}
-		} else {
+		}
+		if(!lineBySegment) {
 			if(lineStyle == LineStyle.SOLID) {
 				drawLineGC(gc, xAxis, yAxis, xseries, yseries, isHorizontal);
 			} else {
@@ -550,6 +556,12 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 
 	private void drawArea(GC gc, int[] p, boolean isHorizontal) {
 
+		if(isHorizontal ? p[0] == p[2] : p[1] == p[3]) {
+			/*
+			 * Nothing to fill within one pixel column
+			 */
+			return;
+		}
 		int alpha = gc.getAlpha();
 		gc.setAlpha(ALPHA);
 		Color oldBackground = gc.getBackground();

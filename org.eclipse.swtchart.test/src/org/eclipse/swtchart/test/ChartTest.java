@@ -17,7 +17,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import jdk.jfr.consumer.RecordingStream;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
@@ -439,14 +443,12 @@ public class ChartTest extends ChartTestCase {
 	public void testMouseMoveRedraw() {
 
 		showChart();
-		int[] paintCount = {0};
-		chart.addPaintListener(_ -> paintCount[0]++);
-		assertEquals(0, paintsOnMouseMove(paintCount), "repainted although no position marker is drawn");
+		assertEquals(0, redrawsOnMouseMove(), "repainted although no position marker is drawn");
 		chart.getAxisSet().getXAxis(0).setDrawPositionMarker(true);
-		assertTrue(paintsOnMouseMove(paintCount) > 0, "the position marker is not drawn");
+		assertTrue(redrawsOnMouseMove() > 0, "the position marker is not drawn");
 		// the marker is drawn along the axis ticks only
 		chart.getAxisSet().getXAxis(0).getTick().setVisible(false);
-		assertEquals(0, paintsOnMouseMove(paintCount), "repainted although the axis ticks are hidden");
+		assertEquals(0, redrawsOnMouseMove(), "repainted although the axis ticks are hidden");
 	}
 
 	/**
@@ -456,62 +458,45 @@ public class ChartTest extends ChartTestCase {
 	public void testCustomPaintListenerRedraw() {
 
 		showChart();
-		int[] paintCount = {0};
 		IPlotArea plotArea = chart.getPlotArea();
-		plotArea.getControl().addPaintListener(_ -> paintCount[0]++);
 		ICustomPaintListener listener = _ -> {
 		};
-		waitForPendingPaints(paintCount);
-		plotArea.addCustomPaintListener(listener);
-		assertTrue(paintsWithin(paintCount) > 0, "not repainted when adding a custom paint listener");
-		waitForPendingPaints(paintCount);
-		plotArea.removeCustomPaintListener(listener);
-		assertTrue(paintsWithin(paintCount) > 0, "not repainted when removing a custom paint listener");
-		waitForPendingPaints(paintCount);
-		plotArea.removeCustomPaintListener(listener);
-		assertEquals(0, paintsWithin(paintCount), "repainted when removing a custom paint listener that isn't added");
+		String redraw = "org.eclipse.swtchart.internal.PlotArea::redrawIfNotDisposed";
+		assertTrue(calls(redraw, () -> plotArea.addCustomPaintListener(listener)) > 0, "not repainted when adding a custom paint listener");
+		assertTrue(calls(redraw, () -> plotArea.removeCustomPaintListener(listener)) > 0, "not repainted when removing a custom paint listener");
+		assertEquals(0, calls(redraw, () -> plotArea.removeCustomPaintListener(listener)), "repainted when removing a custom paint listener that isn't added");
 	}
 
 	/**
-	 * Runs the event loop for a while and returns the repaints counted meanwhile.
+	 * Moves the mouse over the plot area and returns the repaints the chart requests for it.
 	 */
-	private int paintsWithin(int[] paintCount) {
+	private int redrawsOnMouseMove() {
 
-		long time = System.currentTimeMillis();
-		while(System.currentTimeMillis() - time < 200) {
-			Display.getDefault().readAndDispatch();
-		}
-		return paintCount[0];
-	}
-
-	/**
-	 * Moves the mouse over the plot area and counts the repaints of the chart it causes.
-	 */
-	private int paintsOnMouseMove(int[] paintCount) {
-
-		waitForPendingPaints(paintCount);
 		Event event = new Event();
 		event.x = 20;
 		event.y = 20;
-		chart.getPlotArea().getControl().notifyListeners(SWT.MouseMove, event);
-		return paintsWithin(paintCount);
+		return calls("org.eclipse.swtchart.Chart::redraw", () -> chart.getPlotArea().getControl().notifyListeners(SWT.MouseMove, event));
 	}
 
 	/**
-	 * Runs the event loop until the chart has not been repainted for a while, so that repaints
-	 * requested earlier are not counted for the mouse move.
+	 * Returns how often the action calls the {@code class::method} on this thread, traced by Java
+	 * Flight Recorder, so that other windows uncovering the chart are not counted.
 	 */
-	private void waitForPendingPaints(int[] paintCount) {
+	private static int calls(String method, Runnable action) {
 
-		long quiet = System.currentTimeMillis();
-		long timeout = quiet + 2000;
-		while(System.currentTimeMillis() - quiet < 100 && System.currentTimeMillis() < timeout) {
-			if(paintCount[0] != 0) {
-				paintCount[0] = 0;
-				quiet = System.currentTimeMillis();
-			}
-			Display.getDefault().readAndDispatch();
+		long thread = Thread.currentThread().threadId();
+		AtomicInteger calls = new AtomicInteger();
+		try(RecordingStream stream = new RecordingStream()) {
+			stream.enable("jdk.MethodTrace").with("filter", method).withThreshold(Duration.ZERO);
+			stream.onEvent("jdk.MethodTrace", event -> {
+				if(event.getThread().getJavaThreadId() == thread) {
+					calls.incrementAndGet();
+				}
+			});
+			stream.startAsync();
+			action.run();
+			stream.stop();
 		}
-		paintCount[0] = 0;
+		return calls.get();
 	}
 }

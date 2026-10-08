@@ -15,7 +15,11 @@ package org.eclipse.swtchart.extensions.marker;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import jdk.jfr.consumer.RecordingStream;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
@@ -33,6 +37,7 @@ import org.junit.jupiter.api.Test;
  */
 public class AbstractBaseChartPaintListener_1_UITest {
 
+	private static final String REDRAW = "org.eclipse.swtchart.extensions.marker.AbstractBaseChartPaintListener::redraw";
 	private Shell shell;
 	private BaseChart baseChart;
 	private int[] paintCount = {0};
@@ -62,9 +67,7 @@ public class AbstractBaseChartPaintListener_1_UITest {
 		waitForPendingPaints();
 		marker.setDraw(false);
 		assertTrue(paintsWithin() > 0, "not repainted when hiding the marker");
-		waitForPendingPaints();
-		marker.setDraw(false);
-		assertEquals(0, paintsWithin(), "repainted although the marker was hidden already");
+		assertEquals(0, calls(REDRAW, () -> marker.setDraw(false)), "repainted although the marker was hidden already");
 		waitForPendingPaints();
 		marker.setDraw(true);
 		assertTrue(paintsWithin() > 0, "not repainted when showing the marker");
@@ -78,9 +81,7 @@ public class AbstractBaseChartPaintListener_1_UITest {
 		waitForPendingPaints();
 		marker.setForegroundColor(Display.getDefault().getSystemColor(SWT.COLOR_RED));
 		assertTrue(paintsWithin() > 0, "not repainted when changing the color");
-		waitForPendingPaints();
-		marker.setForegroundColor(Display.getDefault().getSystemColor(SWT.COLOR_RED));
-		assertEquals(0, paintsWithin(), "repainted although the color is the same");
+		assertEquals(0, calls(REDRAW, () -> marker.setForegroundColor(Display.getDefault().getSystemColor(SWT.COLOR_RED))), "repainted although the color is the same");
 	}
 
 	@Test
@@ -124,6 +125,28 @@ public class AbstractBaseChartPaintListener_1_UITest {
 			Display.getDefault().readAndDispatch();
 		}
 		paintCount[0] = 0;
+	}
+
+	/**
+	 * Returns how often the action calls the {@code class::method} on this thread, traced by Java
+	 * Flight Recorder, so that other windows uncovering the chart are not counted.
+	 */
+	private static int calls(String method, Runnable action) {
+
+		long thread = Thread.currentThread().threadId();
+		AtomicInteger calls = new AtomicInteger();
+		try(RecordingStream stream = new RecordingStream()) {
+			stream.enable("jdk.MethodTrace").with("filter", method).withThreshold(Duration.ZERO);
+			stream.onEvent("jdk.MethodTrace", event -> {
+				if(event.getThread().getJavaThreadId() == thread) {
+					calls.incrementAndGet();
+				}
+			});
+			stream.startAsync();
+			action.run();
+			stream.stop();
+		}
+		return calls.get();
 	}
 
 	private static class TestMarker extends AbstractBaseChartPaintListener {

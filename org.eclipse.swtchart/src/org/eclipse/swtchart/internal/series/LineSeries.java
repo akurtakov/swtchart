@@ -385,10 +385,10 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 		gc.setForeground(getLineColor());
 		boolean isHorizontal = xAxis.isHorizontalAxis();
 		/*
-		 * Only steps and stacks need the line drawn segment by segment, other
-		 * lines are drawn like without the area, after it so they're on top
+		 * Only stacks need the line drawn segment by segment, other lines are
+		 * drawn like without the area, after it so they're on top
 		 */
-		boolean lineBySegment = stepEnabled || isValidStackSeries();
+		boolean lineBySegment = isValidStackSeries();
 		if(lineBySegment || areaEnabled) {
 			boolean useAreaStrict = isUseAreaStrict();
 			int length = xseries.length - 1;
@@ -438,6 +438,23 @@ public class LineSeries<T> extends Series<T> implements ILineSeries<T> {
 			}
 		}
 		if(!lineBySegment) {
+			if(stepEnabled) {
+				/*
+				 * A step line is the line through the corners of the steps
+				 */
+				double[] xcorners = new double[xseries.length * 2 - 1];
+				double[] ycorners = new double[xcorners.length];
+				for(int i = 0; i < xseries.length; i++) {
+					xcorners[i * 2] = xseries[i];
+					ycorners[i * 2] = yseries[i];
+					if(i > 0) {
+						xcorners[i * 2 - 1] = xseries[i];
+						ycorners[i * 2 - 1] = yseries[i - 1];
+					}
+				}
+				xseries = xcorners;
+				yseries = ycorners;
+			}
 			if(lineStyle == LineStyle.SOLID) {
 				drawLineGC(gc, xAxis, yAxis, xseries, yseries, isHorizontal);
 			} else {

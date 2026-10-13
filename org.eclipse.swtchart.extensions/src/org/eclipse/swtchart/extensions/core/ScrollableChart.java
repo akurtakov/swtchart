@@ -415,13 +415,15 @@ public class ScrollableChart extends Composite implements IScrollableChart, IEve
 	public void handleMouseMoveEvent(Event event) {
 
 		baseChart.handleMouseMoveEvent(event);
-
-		if(positionMarker.isDraw()) {
+		/*
+		 * The markers are created by applySettings().
+		 */
+		if(positionMarker != null && positionMarker.isDraw()) {
 			positionMarker.setActualPosition(event.x, event.y);
 			redrawPlotArea();
 		}
 
-		if(legendMarker.isDraw()) {
+		if(legendMarker != null && legendMarker.isDraw()) {
 			legendMarker.setActualPosition(event.x, event.y);
 			redrawPlotArea();
 		}

@@ -14,6 +14,9 @@
 package org.eclipse.swtchart.internal.series;
 
 import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.DoubleFunction;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -38,6 +41,8 @@ public class SeriesLabel implements ISeriesLabel {
 	private String format;
 	/** the formats for series labels */
 	private String[] formats;
+	/** the formats resolved from the format patterns */
+	private final Map<String, DoubleFunction<String>> resolvedFormats = new HashMap<>();
 	/** the default label color */
 	private static final int DEFAULT_COLOR = SWT.COLOR_BLACK;
 	/** the default font */
@@ -70,6 +75,7 @@ public class SeriesLabel implements ISeriesLabel {
 		} else {
 			this.format = format;
 		}
+		resolvedFormats.clear();
 	}
 
 	@Override
@@ -83,6 +89,7 @@ public class SeriesLabel implements ISeriesLabel {
 	@Override
 	public void setFormats(String[] formats) {
 
+		resolvedFormats.clear();
 		if(formats == null) {
 			this.formats = new String[0];
 			return;
@@ -177,12 +184,7 @@ public class SeriesLabel implements ISeriesLabel {
 			return;
 		}
 		// get text
-		String text;
-		if(isDecimalFormat(format1)) {
-			text = new DecimalFormat(format1).format(ySeriesValue);
-		} else {
-			text = format1.replaceAll("'", ""); //$NON-NLS-1$ //$NON-NLS-2$
-		}
+		String text = resolvedFormats.computeIfAbsent(format1, SeriesLabel::resolveFormat).apply(ySeriesValue);
 		// draw label
 		if(alignment == SWT.CENTER) {
 			Point p = gc.textExtent(text);
@@ -191,6 +193,23 @@ public class SeriesLabel implements ISeriesLabel {
 			gc.drawString(text, h, v, true);
 		}
 		gc.setForeground(oldForeground);
+	}
+
+	/**
+	 * Resolves the given format pattern to a decimal format or to the literal text it
+	 * consists of.
+	 *
+	 * @param pattern
+	 *            the format pattern
+	 * @return the function formatting a value
+	 */
+	private static DoubleFunction<String> resolveFormat(String pattern) {
+
+		if(isDecimalFormat(pattern)) {
+			return new DecimalFormat(pattern)::format;
+		}
+		String text = pattern.replace("'", ""); //$NON-NLS-1$ //$NON-NLS-2$
+		return _ -> text;
 	}
 
 	/**

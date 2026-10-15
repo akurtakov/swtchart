@@ -29,8 +29,12 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swtchart.extensions.internal.support.CustomSeriesComparator;
 import org.eclipse.swtchart.extensions.internal.support.CustomSeriesEditingSupport;
 import org.eclipse.swtchart.extensions.preferences.PreferenceConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CustomSeriesListUI extends AbstractSeriesListUI {
+
+	private static final Logger logger = LoggerFactory.getLogger(CustomSeriesListUI.class);
 
 	private static final String[] TITLES = CustomSeriesLabelProvider.TITLES;
 	private static final int[] BOUNDS = CustomSeriesLabelProvider.BOUNDS;
@@ -174,7 +178,7 @@ public class CustomSeriesListUI extends AbstractSeriesListUI {
 			try {
 				columns[i] = Integer.parseInt(values[i]);
 			} catch(NumberFormatException e) {
-				e.printStackTrace();
+				logger.error("Failed to parse column order.", e);
 			}
 		}
 

@@ -26,8 +26,12 @@ import org.eclipse.swtchart.vectorgraphics2d.intermediate.commands.CreateCommand
 import org.eclipse.swtchart.vectorgraphics2d.intermediate.commands.DisposeCommand;
 import org.eclipse.swtchart.vectorgraphics2d.intermediate.commands.SetTransformCommand;
 import org.eclipse.swtchart.vectorgraphics2d.intermediate.commands.TransformCommand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AbsoluteToRelativeTransformsFilter extends StreamingFilter {
+
+	private static final Logger logger = LoggerFactory.getLogger(AbsoluteToRelativeTransformsFilter.class);
 
 	private final Stack<AffineTransform> transforms;
 
@@ -62,7 +66,7 @@ public class AbsoluteToRelativeTransformsFilter extends StreamingFilter {
 				AffineTransform invertedOldTransformation = getCurrentTransform().createInverse();
 				relativeTransform.concatenate(invertedOldTransformation);
 			} catch(NoninvertibleTransformException e) {
-				e.printStackTrace();
+				logger.error("Failed to filter command.", e);
 			}
 			relativeTransform.concatenate(absoluteTransform);
 			TransformCommand transformCommand = new TransformCommand(relativeTransform);

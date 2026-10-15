@@ -36,8 +36,12 @@ import org.eclipse.swtchart.extensions.core.IAxisSettings;
 import org.eclipse.swtchart.extensions.core.ISecondaryAxisSettings;
 import org.eclipse.swtchart.extensions.core.ResourceSupport;
 import org.eclipse.swtchart.extensions.core.ScrollableChart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LaTeXTableExportHandler extends AbstractSeriesExportHandler {
+
+	private static final Logger logger = LoggerFactory.getLogger(LaTeXTableExportHandler.class);
 
 	private static final String FILE_EXTENSION = "*.tex"; //$NON-NLS-1$
 	public static final String NAME = MessageFormat.format(Messages.getString(Messages.LATEX_TABLE), FILE_EXTENSION);
@@ -144,7 +148,7 @@ public class LaTeXTableExportHandler extends AbstractSeriesExportHandler {
 						MessageDialog.openInformation(shell, TITLE, MESSAGE_OK);
 					} catch(FileNotFoundException e) {
 						MessageDialog.openError(shell, TITLE, MESSAGE_ERROR);
-						e.printStackTrace();
+						logger.error("LaTeX export failed.", e);
 					}
 				}
 			}

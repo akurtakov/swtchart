@@ -59,8 +59,12 @@ import org.eclipse.swtchart.extensions.preferences.PreferenceSupport;
 import org.eclipse.swtchart.extensions.scattercharts.IScatterSeriesSettings;
 import org.eclipse.swtchart.model.Node;
 import org.eclipse.swtchart.model.NodeDataModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BaseChart extends AbstractExtendedChart implements IKeyboardSupport {
+
+	private static final Logger logger = LoggerFactory.getLogger(BaseChart.class);
 
 	public static final int ID_PRIMARY_X_AXIS = 0;
 	public static final int ID_PRIMARY_Y_AXIS = 0;
@@ -1456,7 +1460,7 @@ public class BaseChart extends AbstractExtendedChart implements IKeyboardSupport
 			try {
 				customSelectionHandler.handleUserSelection(event);
 			} catch(Exception e) {
-				e.printStackTrace();
+				logger.error("Failed to handle custom user selection.", e);
 			}
 		}
 	}
@@ -1467,7 +1471,7 @@ public class BaseChart extends AbstractExtendedChart implements IKeyboardSupport
 			try {
 				seriesModificationListener.handleSeriesModificationEvent();
 			} catch(Exception e) {
-				e.printStackTrace();
+				logger.error("Failed to handle series modification event.", e);
 			}
 		}
 	}
@@ -1491,7 +1495,7 @@ public class BaseChart extends AbstractExtendedChart implements IKeyboardSupport
 						break;
 				}
 			} catch(Exception e) {
-				e.printStackTrace();
+				logger.error("Failed to handle status event.", e);
 			}
 		}
 	}
@@ -1731,7 +1735,7 @@ public class BaseChart extends AbstractExtendedChart implements IKeyboardSupport
 						try {
 							listener.rangeChanged(xRange.lower, xRange.upper);
 						} catch(Exception e) {
-							e.printStackTrace();
+							logger.error("Failed to change range.", e);
 						}
 					}
 				}
@@ -1791,7 +1795,7 @@ public class BaseChart extends AbstractExtendedChart implements IKeyboardSupport
 				handleSelection(undoSelection);
 			}
 		} catch(EmptyStackException e) {
-			e.printStackTrace();
+			logger.error("Failed to undo selection.", e);
 		}
 	}
 

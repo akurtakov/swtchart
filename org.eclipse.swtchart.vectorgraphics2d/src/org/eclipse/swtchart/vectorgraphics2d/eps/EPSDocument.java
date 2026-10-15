@@ -71,6 +71,8 @@ import org.eclipse.swtchart.vectorgraphics2d.util.ImageDataStream;
 import org.eclipse.swtchart.vectorgraphics2d.util.ImageDataStream.Interleaving;
 import org.eclipse.swtchart.vectorgraphics2d.util.LineWrapOutputStream;
 import org.eclipse.swtchart.vectorgraphics2d.util.PageSize;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents a {@code Document} in the <i>Encapsulated PostScript&reg;</i>
@@ -78,6 +80,7 @@ import org.eclipse.swtchart.vectorgraphics2d.util.PageSize;
  */
 class EPSDocument extends SizedDocument {
 
+	private static final Logger logger = LoggerFactory.getLogger(EPSDocument.class);
 	/**
 	 * Constant to convert values from millimeters to PostScript® units
 	 * (1/72th inch).
@@ -145,8 +148,7 @@ class EPSDocument extends SizedDocument {
 
 	public void handle(Command<?> command) {
 
-		if(command instanceof SetClipCommand) {
-			SetClipCommand c = (SetClipCommand)command;
+		if(command instanceof SetClipCommand c) {
 			Shape clip = c.getValue();
 			elements.add("cliprestore");
 			if(clip != null) {
@@ -347,8 +349,7 @@ class EPSDocument extends SizedDocument {
 			String compressed = outBytes.toString(StandardCharsets.ISO_8859_1);
 			out.append(compressed).append(EOL);
 		} catch(IOException e) {
-			// TODO Handle exception
-			e.printStackTrace();
+			logger.error("Creation failed.", e);
 		}
 	}
 

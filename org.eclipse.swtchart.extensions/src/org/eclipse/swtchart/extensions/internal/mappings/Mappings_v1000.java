@@ -33,8 +33,12 @@ import org.eclipse.swtchart.extensions.core.SeriesLabelProvider;
 import org.eclipse.swtchart.extensions.linecharts.ILineSeriesSettings;
 import org.eclipse.swtchart.extensions.piecharts.ICircularSeriesSettings;
 import org.eclipse.swtchart.extensions.scattercharts.IScatterSeriesSettings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Mappings_v1000 {
+
+	private static final Logger logger = LoggerFactory.getLogger(Mappings_v1000.class);
 
 	public static final String VERSION_NUMBER = "v1000";
 
@@ -48,7 +52,7 @@ public class Mappings_v1000 {
 					importMapping(values, mappings);
 				}
 			} catch(Exception e) {
-				e.printStackTrace();
+				logger.error("Failed  to read settings", e);
 			}
 		}
 

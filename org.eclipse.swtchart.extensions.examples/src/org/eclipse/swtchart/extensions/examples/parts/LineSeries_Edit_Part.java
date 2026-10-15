@@ -47,10 +47,14 @@ import org.eclipse.swtchart.extensions.linecharts.ILineSeriesData;
 import org.eclipse.swtchart.extensions.linecharts.ILineSeriesSettings;
 import org.eclipse.swtchart.extensions.linecharts.LineChart;
 import org.eclipse.swtchart.extensions.linecharts.LineSeriesData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import jakarta.inject.Inject;
 
 public class LineSeries_Edit_Part extends Composite {
+
+	private static final Logger logger = LoggerFactory.getLogger(LineSeries_Edit_Part.class);
 
 	private static final int NUM_SERIES = 5;
 	private TabFolder tabFolder;
@@ -605,7 +609,7 @@ public class LineSeries_Edit_Part extends Composite {
 				shiftValue = axisScaleConverter.convertToPrimaryUnit(secondaryValue);
 			}
 		} catch(ParseException e) {
-			e.printStackTrace();
+			logger.error("Failed to parse shift.", e);
 		}
 
 		return shiftValue;

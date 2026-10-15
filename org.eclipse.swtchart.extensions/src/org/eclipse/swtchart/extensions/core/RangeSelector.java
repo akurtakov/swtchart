@@ -27,8 +27,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swtchart.IAxis;
 import org.eclipse.swtchart.Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RangeSelector extends Composite {
+
+	private static final Logger logger = LoggerFactory.getLogger(RangeSelector.class);
 
 	private ScrollableChart scrollableChart;
 
@@ -233,7 +237,7 @@ public class RangeSelector extends Composite {
 				fireUpdateRangeSelection();
 			}
 		} catch(ParseException e) {
-			e.printStackTrace();
+			logger.error("Failed to set range.", e);
 		}
 	}
 

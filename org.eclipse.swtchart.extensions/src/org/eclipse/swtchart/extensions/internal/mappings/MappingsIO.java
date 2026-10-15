@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021, 2025 Lablicate GmbH.
+ * Copyright (c) 2021, 2026 Lablicate GmbH.
  *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
@@ -30,8 +30,12 @@ import org.eclipse.swtchart.extensions.core.MappingsKey;
 import org.eclipse.swtchart.extensions.core.ResourceSupport;
 import org.eclipse.swtchart.extensions.core.SeriesMapper;
 import org.eclipse.swtchart.extensions.preferences.PreferenceConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MappingsIO {
+
+	private static final Logger logger = LoggerFactory.getLogger(MappingsIO.class);
 
 	public static final String VERSION_IDENTIFIER = "Version=";
 	public static final String LINE_DELIMITER = "\r\n";
@@ -77,7 +81,7 @@ public class MappingsIO {
 			}
 			mappings.putAll(readSettings(builder.toString()));
 		} catch(IOException e) {
-			e.printStackTrace();
+			logger.error("Failed to import settings.", e);
 		}
 
 		return mappings;
@@ -90,7 +94,7 @@ public class MappingsIO {
 			printWriter.print(saveSettings(mappings));
 			success = true;
 		} catch(Exception e) {
-			e.printStackTrace();
+			logger.error("Failed to export settings.", e);
 		}
 
 		return success;
@@ -117,7 +121,7 @@ public class MappingsIO {
 			preferenceStore.setValue(PreferenceConstants.P_SERIES_MAPPINGS, settings);
 			ResourceSupport.savePreferenceStore();
 		} catch(Exception e) {
-			e.printStackTrace();
+			logger.error("Failed to persist settings.", e);
 		}
 	}
 

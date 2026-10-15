@@ -21,3 +21,4 @@ Export-Package: org.eclipse.swtchart.export.core,
  org.eclipse.swtchart.export.menu.text,
  org.eclipse.swtchart.export.menu.vector,
  org.eclipse.swtchart.export.vector.model
+Import-Package: org.slf4j;version="1.7.0"

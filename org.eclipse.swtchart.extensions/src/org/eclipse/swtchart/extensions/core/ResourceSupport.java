@@ -31,8 +31,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swtchart.Resources;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ResourceSupport extends Resources {
+
+	private static final Logger logger = LoggerFactory.getLogger(ResourceSupport.class);
 
 	public static final String ICON_SET_RANGE = "set_range.svg"; // $NON-NLS-1$
 	public static final String ICON_RESTRICT_RANGE = "restrict_range.gif"; // $NON-NLS-1$
@@ -106,7 +110,7 @@ public class ResourceSupport extends Resources {
 				 */
 				((PreferenceStore)preferenceStore).load();
 			} catch(IOException e) {
-				e.printStackTrace();
+				logger.error("Failed to load preferences.", e);
 			}
 		}
 		return preferenceStore;
@@ -119,7 +123,7 @@ public class ResourceSupport extends Resources {
 			try {
 				savablePreferenceStore.save();
 			} catch(IOException e) {
-				e.printStackTrace();
+				logger.error("Failed to save preferences.", e);
 			}
 		}
 	}

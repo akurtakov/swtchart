@@ -78,6 +78,8 @@ import org.eclipse.swtchart.vectorgraphics2d.intermediate.commands.ShearCommand;
 import org.eclipse.swtchart.vectorgraphics2d.intermediate.commands.TransformCommand;
 import org.eclipse.swtchart.vectorgraphics2d.intermediate.commands.TranslateCommand;
 import org.eclipse.swtchart.vectorgraphics2d.util.GraphicsUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -90,6 +92,8 @@ import org.eclipse.swtchart.vectorgraphics2d.util.GraphicsUtils;
  * @see <a href="http://www.java2s.com/Code/Java/2D-Graphics-GUI/YourownGraphics2D.htm">http://www.java2s.com/Code/Java/2D-Graphics-GUI/YourownGraphics2D.htm</a>
  */
 public class VectorGraphics2D extends Graphics2D implements Cloneable {
+
+	private static final Logger logger = LoggerFactory.getLogger(VectorGraphics2D.class);
 
 	private final MutableCommandSequence commands;
 	/** Device configuration settings. */
@@ -553,7 +557,7 @@ public class VectorGraphics2D extends Graphics2D implements Cloneable {
 			clone = (VectorGraphics2D)this.clone();
 			emit(new CreateCommand(clone));
 		} catch(CloneNotSupportedException e) {
-			e.printStackTrace();
+			logger.error("Creation failed.", e);
 		}
 		return clone;
 	}

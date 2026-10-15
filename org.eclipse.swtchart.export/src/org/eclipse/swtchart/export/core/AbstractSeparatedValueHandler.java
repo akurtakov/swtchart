@@ -30,14 +30,18 @@ import org.eclipse.swtchart.extensions.core.IAxisScaleConverter;
 import org.eclipse.swtchart.extensions.core.IAxisSettings;
 import org.eclipse.swtchart.extensions.core.ISecondaryAxisSettings;
 import org.eclipse.swtchart.extensions.core.ScrollableChart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractSeparatedValueHandler extends AbstractSeriesExportHandler {
+
+	private static final Logger logger = LoggerFactory.getLogger(AbstractSeparatedValueHandler.class);
 
 	private String title;
 	private String fileExtension;
 	private String delimiter;
 
-	public AbstractSeparatedValueHandler(String title, String fileExtension, String delimiter) {
+	protected AbstractSeparatedValueHandler(String title, String fileExtension, String delimiter) {
 
 		this.title = title;
 		this.fileExtension = fileExtension;
@@ -121,7 +125,7 @@ public abstract class AbstractSeparatedValueHandler extends AbstractSeriesExport
 						MessageDialog.openInformation(shell, title, MESSAGE_OK);
 					} catch(FileNotFoundException e) {
 						MessageDialog.openError(shell, title, MESSAGE_ERROR);
-						e.printStackTrace();
+						logger.error("CSV export failed.", e);
 					}
 				}
 			}

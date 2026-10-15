@@ -27,8 +27,12 @@ import org.eclipse.swtchart.extensions.core.ResourceSupport;
 import org.eclipse.swtchart.extensions.core.ScrollableChart;
 import org.eclipse.swtchart.extensions.dialogs.ChartRangeDialog;
 import org.eclipse.swtchart.extensions.dialogs.ChartRangeValues;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SetRangeChartHandler extends AbstractChartMenuEntry {
+
+	private static final Logger logger = LoggerFactory.getLogger(SetRangeChartHandler.class);
 
 	private String category = "";
 
@@ -82,7 +86,7 @@ public class SetRangeChartHandler extends AbstractChartMenuEntry {
 					fireUpdateRangeSelection(scrollableChart);
 				}
 			} catch(ParseException e) {
-				e.printStackTrace();
+				logger.error("Failed to set range.", e);
 			}
 		}
 	}

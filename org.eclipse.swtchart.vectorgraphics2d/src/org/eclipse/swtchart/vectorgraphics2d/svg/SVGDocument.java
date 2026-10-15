@@ -75,6 +75,8 @@ import org.eclipse.swtchart.vectorgraphics2d.intermediate.commands.SetTransformC
 import org.eclipse.swtchart.vectorgraphics2d.util.DataUtils;
 import org.eclipse.swtchart.vectorgraphics2d.util.GraphicsUtils;
 import org.eclipse.swtchart.vectorgraphics2d.util.PageSize;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
@@ -87,6 +89,8 @@ import org.w3c.dom.Element;
 // TODO Implement composite support for SVG (filters?)
 // TODO Implement paint support for SVG
 class SVGDocument extends SizedDocument {
+
+	private static final Logger logger = LoggerFactory.getLogger(SVGDocument.class);
 
 	private static final String SVG_DOCTYPE_QNAME = "svg";
 	private static final String SVG_DOCTYPE_PUBLIC_ID = "-//W3C//DTD SVG 1.1//EN";
@@ -297,7 +301,7 @@ class SVGDocument extends SizedDocument {
 				try {
 					states.push((GraphicsState)getCurrentState().clone());
 				} catch(CloneNotSupportedException e) {
-					e.printStackTrace();
+					logger.error("Failed to apply state command.", e);
 				}
 			} else if(command instanceof DisposeCommand) {
 				states.pop();

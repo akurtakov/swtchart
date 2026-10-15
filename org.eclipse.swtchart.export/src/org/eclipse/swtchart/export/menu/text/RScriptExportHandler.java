@@ -47,8 +47,12 @@ import org.eclipse.swtchart.extensions.core.ScrollableChart;
 import org.eclipse.swtchart.extensions.linecharts.LineChart;
 import org.eclipse.swtchart.extensions.linecharts.StepChart;
 import org.eclipse.swtchart.extensions.scattercharts.ScatterChart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RScriptExportHandler extends AbstractSeriesExportHandler {
+
+	private static final Logger logger = LoggerFactory.getLogger(RScriptExportHandler.class);
 
 	private static final String FILE_EXTENSION = "*.R"; //$NON-NLS-1$
 	public static final String NAME = MessageFormat.format(Messages.getString(Messages.IMAGE_R_SCRIPT), FILE_EXTENSION);
@@ -187,7 +191,7 @@ public class RScriptExportHandler extends AbstractSeriesExportHandler {
 						MessageDialog.openInformation(shell, TITLE, MESSAGE_OK);
 					} catch(FileNotFoundException e) {
 						MessageDialog.openError(shell, TITLE, MESSAGE_ERROR);
-						e.printStackTrace();
+						logger.error("R script export failed.", e);
 					}
 				}
 			}

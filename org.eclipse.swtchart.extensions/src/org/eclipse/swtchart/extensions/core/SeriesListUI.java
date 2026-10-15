@@ -34,8 +34,12 @@ import org.eclipse.swtchart.extensions.internal.support.SeriesContentProvider;
 import org.eclipse.swtchart.extensions.internal.support.SeriesEditingSupport;
 import org.eclipse.swtchart.extensions.internal.support.SeriesFilter;
 import org.eclipse.swtchart.extensions.preferences.PreferenceConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SeriesListUI extends AbstractSeriesListUI {
+
+	private static final Logger logger = LoggerFactory.getLogger(SeriesListUI.class);
 
 	private static final String[] TITLES = SeriesLabelProvider.TITLES;
 	private static final int[] BOUNDS = SeriesLabelProvider.BOUNDS;
@@ -225,7 +229,7 @@ public class SeriesListUI extends AbstractSeriesListUI {
 			try {
 				columns[i] = Integer.parseInt(values[i]);
 			} catch(NumberFormatException e) {
-				e.printStackTrace();
+				logger.error("Failed to convert column order.", e);
 			}
 		}
 

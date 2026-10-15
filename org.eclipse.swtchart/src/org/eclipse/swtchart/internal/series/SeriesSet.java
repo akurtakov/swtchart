@@ -32,11 +32,15 @@ import org.eclipse.swtchart.Range;
 import org.eclipse.swtchart.internal.axis.Axis;
 import org.eclipse.swtchart.internal.compress.CompressConfig;
 import org.eclipse.swtchart.internal.compress.ICompress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A series container.
  */
 public class SeriesSet implements ISeriesSet {
+
+	private static final Logger logger = LoggerFactory.getLogger(SeriesSet.class);
 
 	/** the chart */
 	private final Chart chart;
@@ -285,7 +289,7 @@ public class SeriesSet implements ISeriesSet {
 				compressor.compress(config);
 			}
 		} catch(Exception e) {
-			e.printStackTrace();
+			logger.error("Failed to compress series.", e);
 		}
 	}
 

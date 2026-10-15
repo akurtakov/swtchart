@@ -86,8 +86,12 @@ import org.eclipse.swtchart.extensions.piecharts.ICircularSeriesSettings;
 import org.eclipse.swtchart.extensions.piecharts.PieChart;
 import org.eclipse.swtchart.extensions.scattercharts.ScatterChart;
 import org.eclipse.swtchart.extensions.support.RangeSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ScrollableChart extends Composite implements IScrollableChart, IEventHandler, IExtendedChart {
+
+	private static final Logger logger = LoggerFactory.getLogger(ScrollableChart.class);
 
 	@Deprecated
 	public static final int NO_COMPRESS_TO_LENGTH = Integer.MAX_VALUE; // Use ICompressionSupport.NO_COMPRESSION
@@ -1140,7 +1144,7 @@ public class ScrollableChart extends Composite implements IScrollableChart, IEve
 					IChartMenuEntry menuEntry = (IChartMenuEntry)element.createExecutableExtension(EXTENSION_POINT_MENU_ENTRY);
 					addMenuEntry(menuEntry);
 				} catch(CoreException e) {
-					e.printStackTrace();
+					logger.error("Failed to add menu entry.", e);
 				}
 			}
 		}

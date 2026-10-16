@@ -91,25 +91,27 @@ public class Resources {
 
 		String key = getFontKey(name, height, style);
 		Font font = fontMap.get(key);
-		if(font == null) {
-			font = new Font(getDisplay(), name, height, style);
+		if(font == null || font.isDisposed()) {
+			Display display = getDisplay();
+			if(fontMap.isEmpty()) {
+				/*
+				 * Dispose the cached fonts together with the display.
+				 */
+				display.disposeExec(Resources::disposeFonts);
+			}
+			font = new Font(display, name, height, style);
 			fontMap.put(key, font);
 		}
 
 		return font;
 	}
 
-	@Override
-	protected void finalize() throws Throwable {
+	private static void disposeFonts() {
 
-		/*
-		 * Fonts
-		 */
 		for(Font font : fontMap.values()) {
-			if(font != null && !font.isDisposed()) {
-				font.dispose();
-			}
+			font.dispose();
 		}
+		fontMap.clear();
 	}
 
 	private static String getFontKey(String name, int height, int style) {

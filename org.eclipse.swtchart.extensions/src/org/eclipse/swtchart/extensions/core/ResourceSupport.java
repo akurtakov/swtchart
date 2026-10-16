@@ -162,18 +162,6 @@ public class ResourceSupport extends Resources {
 		return resourceManager.createImageWithDefault(ImageDescriptor.createWithFlags(imageRegistry.getDescriptor(key), SWT.IMAGE_DISABLE));
 	}
 
-	@Override
-	protected void finalize() throws Throwable {
-
-		/*
-		 * Images
-		 */
-		if(imageRegistry != null) {
-			imageRegistry.dispose();
-		}
-		super.finalize();
-	}
-
 	private static ImageRegistry initializeImageRegistry() {
 
 		if(getDisplay() == null) {
